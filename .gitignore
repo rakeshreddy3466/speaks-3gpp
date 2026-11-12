@@ -1,0 +1,16 @@
+# TeleQnA is password protected to avoid training contamination: the questions, the unzipped
+# dataset and every run record that contains question text are never committed
+data/
+runs/
+# environments and caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+# model files
+*.gguf
+*.safetensors
+*.bin
+models/

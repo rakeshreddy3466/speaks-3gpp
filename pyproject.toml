@@ -1,0 +1,45 @@
+[project]
+name = "speaks3gpp"
+version = "0.1.0"
+description = "Does the model speak 3GPP? Grounding a local LLM in 5G NR standards with retrieval and an acronym glossary."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "python-docx>=1.1",
+    "pyyaml>=6.0",
+    "pyzipper>=0.3.6",
+    "tabulate>=0.9",
+]
+
+[dependency-groups]
+# the embedding model (pulls in PyTorch): only needed for `make index` and `make run`, so CI
+# stays light
+retrieval = [
+    "sentence-transformers>=3.0",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/speaks3gpp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = ["ollama: needs a running Ollama server (skipped on CI)"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

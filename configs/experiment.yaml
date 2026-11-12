@@ -1,0 +1,41 @@
+seed: 42
+
+model:
+  name: qwen2.5:3b
+  url: http://localhost:11434
+  num_ctx: 8192
+  num_predict: 8
+  temperature: 0.0
+
+questions:
+  categories: ["Standards specifications", "Standards overview"]
+  release_tag: "[3GPP Release 17]"
+  max_questions: 300
+  # fixed RAN keyword list, matched on the question text only (word boundaries, case sensitive
+  # for acronyms, case insensitive for the phrases)
+  acronyms: [NR, gNB, ng-eNB, NG-RAN, RRC, MAC, RLC, PDCP, SDAP, SSB, BWP, PDSCH, PUSCH, PDCCH,
+             PUCCH, PRACH, PBCH, DM-RS, DMRS, CSI-RS, SRS, PT-RS, HARQ, RACH, MR-DC, EN-DC, NR-DC,
+             MCG, SCG, PCell, PSCell, SCell, Xn, F1, E1, IAB, RedCap, SUL, TDD, FDD, CORESET, DRX,
+             UCI, DCI, QoS, UE]
+  phrases: ["beam", "handover", "carrier aggregation", "dual connectivity", "random access",
+            "numerology", "slot", "paging", "sidelink", "bandwidth part", "radio bearer",
+            "measurement", "reference signal", "resource block", "subcarrier", "cell group",
+            "radio link", "physical layer", "uplink", "downlink"]
+
+corpus:
+  release_prefix: "h"   # 3GPP version letter for Release 17 (h = 17)
+  # NR overall, RRC, MAC, physical channels, physical layer procedures (control, data), idle mode,
+  # NG-RAN architecture, multi-connectivity
+  specs: ["38.300", "38.331", "38.321", "38.211", "38.213", "38.214", "38.304", "38.401", "37.340"]
+  vocabulary: "21.905"
+  chunk_words: 220
+  overlap_words: 40
+
+retrieval:
+  embedding_model: sentence-transformers/all-MiniLM-L6-v2
+  top_k: 4
+  max_glossary_terms: 8
+
+analysis:
+  bootstrap_resamples: 2000
+  context_hit_threshold: 0.6
