@@ -21,7 +21,7 @@ from . import RESULTS, RUNS, config
 from . import glossary as gl
 from .prompts import SETUPS
 from .questions import Question, load_selected
-from .specs import load_chunks
+from .specs import Chunk, load_chunks
 
 WORD_RE = re.compile(r"[a-z0-9][a-z0-9\-]*")
 STOPWORDS = set(
@@ -72,7 +72,7 @@ def load_answers(path=None) -> pd.DataFrame:
 
 
 def analyse(
-    df: pd.DataFrame, questions: list[Question], chunk_text: dict[str, str], glossary, cfg
+    df: pd.DataFrame, questions: list[Question], chunks: dict[str, Chunk], glossary, cfg
 ) -> dict:
     seed = cfg["seed"]
     n_boot = cfg["analysis"]["bootstrap_resamples"]
@@ -126,22 +126,25 @@ def analyse(
                     "difference_points": round(100 * (wide[a].mean() - wide[b].mean()), 1),
                     "only_first_right": only_a,
                     "only_second_right": only_b,
-                    "mcnemar_p": round(mcnemar_exact(only_a, only_b), 4),
+                    "mcnemar_p": float(f"{mcnemar_exact(only_a, only_b):.2g}"),
                 }
             )
 
     out["error_groups"] = {}
+    hit_of: dict[str, dict[str, bool]] = {}
     rows = df.set_index(["setup", "qid"])
     for s in ("retrieval", "retrieval_glossary"):
         if s not in setups:
             continue
         groups = {"missing_context": 0, "context_present": 0, "unparsed": 0}
         hits = 0
+        hit_of[s] = {}
         for qid in ids:
             r = rows.loc[(s, qid)]
             q = qmap[qid]
-            texts = [chunk_text[c] for c in r["chunk_ids"]]
+            texts = [chunks[c].text for c in r["chunk_ids"]]
             hit = context_hit(q.options[q.answer], texts, thr)
+            hit_of[s][qid] = hit
             hits += hit
             if r["correct"]:
                 continue
@@ -151,7 +154,17 @@ def analyse(
                 groups["context_present"] += 1
             else:
                 groups["missing_context"] += 1
-        out["error_groups"][s] = {**groups, "context_hit_rate": round(hits / len(ids), 4)}
+        right_hit = [bool(wide.loc[q, s]) for q in ids if hit_of[s][q]]
+        right_miss = [bool(wide.loc[q, s]) for q in ids if not hit_of[s][q]]
+        out["error_groups"][s] = {
+            **groups,
+            "context_hit_rate": round(hits / len(ids), 4),
+            "accuracy_when_hit": {"n": len(right_hit), "accuracy": round(np.mean(right_hit), 4)},
+            "accuracy_when_missed": {
+                "n": len(right_miss),
+                "accuracy": round(np.mean(right_miss), 4),
+            },
+        }
 
     out["flips_vs_closed_book"] = {}
     for s in ("retrieval", "retrieval_glossary"):
@@ -161,8 +174,47 @@ def analyse(
                 "hurt": int((wide["closed_book"] & ~wide[s]).sum()),
                 "both_right": int((wide["closed_book"] & wide[s]).sum()),
                 "both_wrong": int((~wide["closed_book"] & ~wide[s]).sum()),
+                "hurt_with_answer_in_context": int(
+                    sum(
+                        hit_of[s][q]
+                        for q in ids
+                        if wide.loc[q, "closed_book"] and not wide.loc[q, s]
+                    )
+                ),
             }
+
+    out["diagnostics"] = diagnostics(df, ids, chunks)
     return out
+
+
+def diagnostics(df: pd.DataFrame, ids: list[str], chunks: dict[str, Chunk]) -> dict:
+    """Why did the glossary change so little? Compare what B and C retrieved."""
+    by = {s: df[df.setup == s].set_index("qid") for s in ("retrieval", "retrieval_glossary")}
+    if any(len(v) == 0 for v in by.values()):
+        return {}
+    b, c = by["retrieval"], by["retrieval_glossary"]
+    overlap = [len(set(b.loc[q, "chunk_ids"]) & set(c.loc[q, "chunk_ids"])) for q in ids]
+    k = len(b.loc[ids[0], "chunk_ids"])
+
+    def def_share(frame) -> float:
+        all_ids = [i for q in ids for i in frame.loc[q, "chunk_ids"]]
+        bad = sum(
+            any(w in chunks[i].title.lower() for w in ("abbreviation", "definition"))
+            for i in all_ids
+        )
+        return round(bad / len(all_ids), 4)
+
+    terms = c.loc[ids, "glossary_terms"]
+    return {
+        "same_chunks_b_and_c": int(sum(o == k for o in overlap)),
+        "mean_chunk_overlap_b_c": round(float(np.mean(overlap)) / k, 4),
+        "questions_without_glossary_terms": int((terms == 0).sum()),
+        "mean_glossary_terms": round(float(terms.mean()), 2),
+        "definition_or_abbreviation_chunk_share": {
+            "retrieval": def_share(b),
+            "retrieval_glossary": def_share(c),
+        },
+    }
 
 
 def main() -> None:
@@ -170,8 +222,8 @@ def main() -> None:
     ap.add_argument("--config", default=None)
     args = ap.parse_args()
     cfg = config.load(args.config) if args.config else config.load()
-    chunk_text = {c.id: c.text for c in load_chunks()}
-    res = analyse(load_answers(), load_selected(), chunk_text, gl.load(), cfg)
+    chunks = {c.id: c for c in load_chunks()}
+    res = analyse(load_answers(), load_selected(), chunks, gl.load(), cfg)
     (RESULTS / "summary.json").write_text(json.dumps(res, indent=1) + "\n")
     print(json.dumps(res, indent=1))
 

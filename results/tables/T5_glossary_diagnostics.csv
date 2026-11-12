@@ -1,0 +1,7 @@
+diagnostic,value
+questions where B and C retrieved the same 4 chunks,137
+mean share of chunks shared by B and C,81.0%
+questions with no glossary acronym (C = B prompt),65
+mean glossary acronyms per question,1.32
+"definition or abbreviation chunks retrieved, B",2.9%
+"definition or abbreviation chunks retrieved, C",3.0%

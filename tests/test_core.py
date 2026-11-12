@@ -227,3 +227,39 @@ def test_ollama_answers_a_digit():
     except Exception as e:  # noqa: BLE001
         pytest.skip(f"no ollama: {e}")
     assert prompts.parse_answer(r.text, 2) is not None
+
+
+# ---------- manual review ----------
+
+
+def test_review_summary_counts_labels_and_rejects_unknown(tmp_path, monkeypatch):
+    import csv
+    import json
+
+    from speaks3gpp import review
+
+    sheet = tmp_path / "sheet.csv"
+    monkeypatch.setattr(review, "SHEET", sheet)
+    monkeypatch.setattr(review, "RESULTS", tmp_path)
+    rows = [
+        {"qid": "q1", "auto_group": "missing_context", "label": "wrong_clause"},
+        {"qid": "q2", "auto_group": "context_present", "label": "context_ignored"},
+        {"qid": "q3", "auto_group": "missing_context", "label": ""},
+    ]
+    with open(sheet, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=review.FIELDS)
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: r.get(k, "") for k in review.FIELDS})
+    out = review.summarise()
+    assert out["labelled"] == 2 and out["counts"]["wrong_clause"] == 1
+    assert out["auto_vs_manual_agreement"] == 1.0
+    assert json.loads((tmp_path / "manual_review.json").read_text())["sampled"] == 3
+    rows[2]["label"] = "typo"
+    with open(sheet, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=review.FIELDS)
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: r.get(k, "") for k in review.FIELDS})
+    with pytest.raises(SystemExit):
+        review.summarise()

@@ -67,21 +67,21 @@
    "difference_points": 13.7,
    "only_first_right": 69,
    "only_second_right": 28,
-   "mcnemar_p": 0.0
+   "mcnemar_p": 3.8e-05
   },
   {
    "comparison": "retrieval_glossary vs retrieval",
    "difference_points": -1.7,
    "only_first_right": 12,
    "only_second_right": 17,
-   "mcnemar_p": 0.4583
+   "mcnemar_p": 0.46
   },
   {
    "comparison": "retrieval_glossary vs closed_book",
    "difference_points": 12.0,
    "only_first_right": 66,
    "only_second_right": 30,
-   "mcnemar_p": 0.0003
+   "mcnemar_p": 0.00031
   }
  ],
  "error_groups": {
@@ -89,13 +89,29 @@
    "missing_context": 62,
    "context_present": 41,
    "unparsed": 0,
-   "context_hit_rate": 0.53
+   "context_hit_rate": 0.53,
+   "accuracy_when_hit": {
+    "n": 159,
+    "accuracy": 0.7421
+   },
+   "accuracy_when_missed": {
+    "n": 141,
+    "accuracy": 0.5603
+   }
   },
   "retrieval_glossary": {
    "missing_context": 71,
    "context_present": 37,
    "unparsed": 0,
-   "context_hit_rate": 0.51
+   "context_hit_rate": 0.51,
+   "accuracy_when_hit": {
+    "n": 153,
+    "accuracy": 0.7582
+   },
+   "accuracy_when_missed": {
+    "n": 147,
+    "accuracy": 0.517
+   }
   }
  },
  "flips_vs_closed_book": {
@@ -103,13 +119,25 @@
    "helped": 69,
    "hurt": 28,
    "both_right": 128,
-   "both_wrong": 75
+   "both_wrong": 75,
+   "hurt_with_answer_in_context": 11
   },
   "retrieval_glossary": {
    "helped": 66,
    "hurt": 30,
    "both_right": 126,
-   "both_wrong": 78
+   "both_wrong": 78,
+   "hurt_with_answer_in_context": 11
+  }
+ },
+ "diagnostics": {
+  "same_chunks_b_and_c": 137,
+  "mean_chunk_overlap_b_c": 0.81,
+  "questions_without_glossary_terms": 65,
+  "mean_glossary_terms": 1.32,
+  "definition_or_abbreviation_chunk_share": {
+   "retrieval": 0.0292,
+   "retrieval_glossary": 0.03
   }
  }
 }

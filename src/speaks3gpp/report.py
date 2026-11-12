@@ -49,11 +49,41 @@ def tables(s: dict) -> None:
             }
         )
     write(pd.DataFrame(rows), "T1_accuracy")
-    write(pd.DataFrame(s["paired"]), "T2_paired_mcnemar")
-    eg = [{"setup": LABEL[k], **v} for k, v in s["error_groups"].items()]
+    t2 = pd.DataFrame(s["paired"])
+    t2["mcnemar_p"] = [f"{p:.2g}" for p in t2["mcnemar_p"]]
+    write(t2, "T2_paired_mcnemar")
+    eg = []
+    for k, v in s["error_groups"].items():
+        hit, miss = v["accuracy_when_hit"], v["accuracy_when_missed"]
+        eg.append(
+            {
+                "setup": LABEL[k],
+                "wrong: missing context": v["missing_context"],
+                "wrong: context present": v["context_present"],
+                "unparsed": v["unparsed"],
+                "answer text in top 4": pct(v["context_hit_rate"]),
+                "accuracy when in context": f"{pct(hit['accuracy'])} (n={hit['n']})",
+                "accuracy when not": f"{pct(miss['accuracy'])} (n={miss['n']})",
+            }
+        )
     write(pd.DataFrame(eg), "T3_error_groups")
     fl = [{"setup": LABEL[k], **v} for k, v in s["flips_vs_closed_book"].items()]
     write(pd.DataFrame(fl), "T4_flips_vs_closed_book")
+    d = s.get("diagnostics", {})
+    if d:
+        share = d["definition_or_abbreviation_chunk_share"]
+        rows = [
+            ("questions where B and C retrieved the same 4 chunks", d["same_chunks_b_and_c"]),
+            ("mean share of chunks shared by B and C", pct(d["mean_chunk_overlap_b_c"])),
+            (
+                "questions with no glossary acronym (C = B prompt)",
+                d["questions_without_glossary_terms"],
+            ),
+            ("mean glossary acronyms per question", d["mean_glossary_terms"]),
+            ("definition or abbreviation chunks retrieved, B", pct(share["retrieval"])),
+            ("definition or abbreviation chunks retrieved, C", pct(share["retrieval_glossary"])),
+        ]
+        write(pd.DataFrame(rows, columns=["diagnostic", "value"]), "T5_glossary_diagnostics")
 
 
 def figures(s: dict) -> None:
@@ -83,7 +113,7 @@ def figures(s: dict) -> None:
     fig.savefig(FIGURES / "F1_accuracy.png", dpi=160)
     plt.close(fig)
 
-    fig, ax = plt.subplots(figsize=(6, 3.2))
+    fig, ax = plt.subplots(figsize=(6, 3.6))
     groups = ["missing_context", "context_present", "unparsed"]
     colors = ["#c0504d", "#e3a33b", "#9aa5b1"]
     keys = list(s["error_groups"])
@@ -93,13 +123,13 @@ def figures(s: dict) -> None:
         ax.barh([LABEL[k] for k in keys], vals, left=left, color=col, label=g.replace("_", " "))
         left = [a + b for a, b in zip(left, vals, strict=True)]
     ax.set_xlabel("wrong answers")
-    ax.legend(fontsize=8, loc="lower right")
+    ax.legend(fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.28), ncol=3)
     ax.set_title("Why retrieval answers were wrong (answer text in context or not)", fontsize=9)
     fig.tight_layout()
     fig.savefig(FIGURES / "F2_error_groups.png", dpi=160)
     plt.close(fig)
 
-    fig, ax = plt.subplots(figsize=(6, 3.0))
+    fig, ax = plt.subplots(figsize=(6, 3.4))
     keys = list(s["flips_vs_closed_book"])
     helped = [s["flips_vs_closed_book"][k]["helped"] for k in keys]
     hurt = [-s["flips_vs_closed_book"][k]["hurt"] for k in keys]
@@ -107,7 +137,7 @@ def figures(s: dict) -> None:
     ax.barh([LABEL[k] for k in keys], hurt, color="#c0504d", label="right to wrong")
     ax.axvline(0, color="black", lw=0.8)
     ax.set_xlabel("questions that changed compared with closed book")
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.3), ncol=2)
     fig.tight_layout()
     fig.savefig(FIGURES / "F3_flips.png", dpi=160)
     plt.close(fig)
@@ -117,7 +147,7 @@ def main() -> None:
     s = json.loads((RESULTS / "summary.json").read_text())
     tables(s)
     figures(s)
-    print("tables T1-T4 and figures F1-F3 written")
+    print("tables T1-T5 and figures F1-F3 written")
 
 
 if __name__ == "__main__":

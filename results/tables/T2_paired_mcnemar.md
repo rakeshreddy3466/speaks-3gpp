@@ -1,5 +1,5 @@
 | comparison                        |   difference_points |   only_first_right |   only_second_right |   mcnemar_p |
 |:----------------------------------|--------------------:|-------------------:|--------------------:|------------:|
-| retrieval vs closed_book          |                13.7 |                 69 |                  28 |      0      |
-| retrieval_glossary vs retrieval   |                -1.7 |                 12 |                  17 |      0.4583 |
-| retrieval_glossary vs closed_book |                12   |                 66 |                  30 |      0.0003 |
+| retrieval vs closed_book          |                13.7 |                 69 |                  28 |     3.8e-05 |
+| retrieval_glossary vs retrieval   |                -1.7 |                 12 |                  17 |     0.46    |
+| retrieval_glossary vs closed_book |                12   |                 66 |                  30 |     0.00031 |

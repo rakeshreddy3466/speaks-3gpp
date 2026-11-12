@@ -1,4 +1,4 @@
-.PHONY: data questions index pilot run analyse report test lint
+.PHONY: data questions index pilot run analyse report review review-summary test lint
 
 # 1. inputs into data/ (git ignored): Release 17 specs from the 3GPP archive, TeleQnA from GitHub
 data:
@@ -25,6 +25,12 @@ analyse:
 # 6. tables T1-T4 and figures F1-F3 from results/summary.json only
 report:
 	uv run python -m speaks3gpp.report
+
+# 7. manual error review: sheet of 50 wrong answers (data/, git ignored), then count the labels
+review:
+	uv run python -m speaks3gpp.review sheet
+review-summary:
+	uv run python -m speaks3gpp.review summary
 
 test:
 	uv run pytest -q

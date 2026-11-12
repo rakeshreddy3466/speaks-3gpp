@@ -1,4 +1,4 @@
-| setup                  |   helped |   hurt |   both_right |   both_wrong |
-|:-----------------------|---------:|-------:|-------------:|-------------:|
-| B retrieval            |       69 |     28 |          128 |           75 |
-| C retrieval + glossary |       66 |     30 |          126 |           78 |
+| setup                  |   helped |   hurt |   both_right |   both_wrong |   hurt_with_answer_in_context |
+|:-----------------------|---------:|-------:|-------------:|-------------:|------------------------------:|
+| B retrieval            |       69 |     28 |          128 |           75 |                            11 |
+| C retrieval + glossary |       66 |     30 |          126 |           78 |                            11 |
