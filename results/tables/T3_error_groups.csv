@@ -1,0 +1,3 @@
+setup,missing_context,context_present,unparsed,context_hit_rate
+B retrieval,62,41,0,0.53
+C retrieval + glossary,71,37,0,0.51

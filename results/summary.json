@@ -1,0 +1,115 @@
+{
+ "n_questions": 300,
+ "model": "qwen2.5:3b",
+ "setups": {
+  "closed_book": {
+   "accuracy": 0.52,
+   "ci95": [
+    0.4633,
+    0.5767
+   ],
+   "correct": 156,
+   "unparsed": 0,
+   "acronym_questions": {
+    "n": 235,
+    "accuracy": 0.5362
+   },
+   "other_questions": {
+    "n": 65,
+    "accuracy": 0.4615
+   },
+   "median_prompt_tokens": 125,
+   "median_seconds": 0.27
+  },
+  "retrieval": {
+   "accuracy": 0.6567,
+   "ci95": [
+    0.6033,
+    0.7133
+   ],
+   "correct": 197,
+   "unparsed": 0,
+   "acronym_questions": {
+    "n": 235,
+    "accuracy": 0.6511
+   },
+   "other_questions": {
+    "n": 65,
+    "accuracy": 0.6769
+   },
+   "median_prompt_tokens": 1290,
+   "median_seconds": 4.77
+  },
+  "retrieval_glossary": {
+   "accuracy": 0.64,
+   "ci95": [
+    0.5866,
+    0.6967
+   ],
+   "correct": 192,
+   "unparsed": 0,
+   "acronym_questions": {
+    "n": 235,
+    "accuracy": 0.6298
+   },
+   "other_questions": {
+    "n": 65,
+    "accuracy": 0.6769
+   },
+   "median_prompt_tokens": 1315,
+   "median_seconds": 5.39
+  }
+ },
+ "chance_accuracy": 0.2172,
+ "paired": [
+  {
+   "comparison": "retrieval vs closed_book",
+   "difference_points": 13.7,
+   "only_first_right": 69,
+   "only_second_right": 28,
+   "mcnemar_p": 0.0
+  },
+  {
+   "comparison": "retrieval_glossary vs retrieval",
+   "difference_points": -1.7,
+   "only_first_right": 12,
+   "only_second_right": 17,
+   "mcnemar_p": 0.4583
+  },
+  {
+   "comparison": "retrieval_glossary vs closed_book",
+   "difference_points": 12.0,
+   "only_first_right": 66,
+   "only_second_right": 30,
+   "mcnemar_p": 0.0003
+  }
+ ],
+ "error_groups": {
+  "retrieval": {
+   "missing_context": 62,
+   "context_present": 41,
+   "unparsed": 0,
+   "context_hit_rate": 0.53
+  },
+  "retrieval_glossary": {
+   "missing_context": 71,
+   "context_present": 37,
+   "unparsed": 0,
+   "context_hit_rate": 0.51
+  }
+ },
+ "flips_vs_closed_book": {
+  "retrieval": {
+   "helped": 69,
+   "hurt": 28,
+   "both_right": 128,
+   "both_wrong": 75
+  },
+  "retrieval_glossary": {
+   "helped": 66,
+   "hurt": 30,
+   "both_right": 126,
+   "both_wrong": 78
+  }
+ }
+}
